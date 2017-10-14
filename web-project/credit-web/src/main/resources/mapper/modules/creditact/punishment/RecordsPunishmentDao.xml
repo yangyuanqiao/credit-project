@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.creditact.dao.punishment.RecordsPunishmentDao">
+    
+	<sql id="recordsPunishmentColumns">
+		a.id AS "id",
+		a.sub_type AS "subType",
+		a.sub_id AS "subId",
+		a.punish_file AS "punishFile",
+		a.punish_type AS "punishType",
+		a.punish_title AS "punishTitle",
+		a.punish_desc AS "punishDesc",
+		a.punish_depart AS "punishDepart",
+		a.punish_date AS "punishDate",
+		a.punish_status AS "punishStatus",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="recordsPunishmentJoins">
+	</sql>
+    
+	<select id="get" resultType="RecordsPunishment">
+		SELECT 
+			<include refid="recordsPunishmentColumns"/>
+		FROM crd_records_punishment a
+		<include refid="recordsPunishmentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="RecordsPunishment">
+		SELECT 
+			<include refid="recordsPunishmentColumns"/>
+		FROM crd_records_punishment a
+		<include refid="recordsPunishmentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="subId != null and subId != ''">
+				AND a.sub_id = #{subId}
+			</if>
+			<if test="punishFile != null and punishFile != ''">
+				AND a.punish_file = #{punishFile}
+			</if>
+			<if test="punishType != null and punishType != ''">
+				AND a.punish_type = #{punishType}
+			</if>
+			<if test="punishTitle != null and punishTitle != ''">
+				AND a.punish_title = #{punishTitle}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="RecordsPunishment">
+		SELECT 
+			<include refid="recordsPunishmentColumns"/>
+		FROM crd_records_punishment a
+		<include refid="recordsPunishmentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO crd_records_punishment(
+			id,
+			sub_type,
+			sub_id,
+			punish_file,
+			punish_type,
+			punish_title,
+			punish_desc,
+			punish_depart,
+			punish_date,
+			punish_status,
+			remark,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			crd_nextval('recordSeq'),
+			#{subType},
+			#{subId},
+			#{punishFile},
+			#{punishType},
+			#{punishTitle},
+			#{punishDesc},
+			#{punishDepart},
+			#{punishDate},
+			#{punishStatus},
+			#{remark},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE crd_records_punishment SET 	
+			sub_type = #{subType},
+			sub_id = #{subId},
+			punish_file = #{punishFile},
+			punish_type = #{punishType},
+			punish_title = #{punishTitle},
+			punish_desc = #{punishDesc},
+			punish_depart = #{punishDepart},
+			punish_date = #{punishDate},
+			punish_status = #{punishStatus},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE crd_records_punishment SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

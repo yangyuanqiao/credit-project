@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.announce.dao.scope.AnnounceScopeDao">
+    
+	<sql id="announceScopeColumns">
+		a.id AS "id",
+		a.sub_type AS "subType",
+		a.announ_sub AS "announSub",
+		a.announ_date AS "announDate",
+		a.announ_content AS "announContent",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		b.name AS "createBy.name",
+		a.begin_time as "beginTime",
+		a.end_time   as "endTime"
+	</sql>
+	
+	<sql id="announceScopeJoins">
+		JOIN sys_user b ON b.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AnnounceScope">
+		SELECT 
+			<include refid="announceScopeColumns"/>
+		FROM crd_announce_scope a
+		<include refid="announceScopeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AnnounceScope">
+		SELECT 
+			<include refid="announceScopeColumns"/>
+		FROM crd_announce_scope a
+		<include refid="announceScopeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="subType != null and subType != ''">
+				AND a.sub_type = #{subType}
+			</if>
+			<if test="announSub != null and announSub != ''">
+				AND a.announ_sub = #{announSub}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AnnounceScope">
+		SELECT 
+			<include refid="announceScopeColumns"/>
+		FROM crd_announce_scope a
+		<include refid="announceScopeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO crd_announce_scope(
+			id,
+			sub_type,
+			announ_sub,
+			announ_date,
+			announ_content,
+			remark,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			begin_time,
+			end_time,
+			del_flag
+		) VALUES (
+			crd_nextval('recordSeq'),
+			#{subType},
+			#{announSub},
+			#{announDate},
+			#{announContent},
+			#{remark},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{beginTime},
+			#{endTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE crd_announce_scope SET 	
+			sub_type = #{subType},
+			announ_sub = #{announSub},
+			announ_date = #{announDate},
+			announ_content = #{announContent},
+			begin_time = #{beginTime},
+			end_time = #{endTime},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE crd_announce_scope SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

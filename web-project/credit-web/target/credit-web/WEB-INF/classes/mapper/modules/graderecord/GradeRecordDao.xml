@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.graderecord.dao.GradeRecordDao">
+    
+	<sql id="gradeRecordColumns">
+		a.id AS "id",
+		a.sub_type AS "subType",
+		a.sub_id AS "subId",
+		a.score AS "score",
+		a.create_date AS "createDate",
+		a.status AS "status",
+		a.content AS "content",
+		a.limit_level AS "limitLevel",
+		a.final_level AS "finalLevel",
+		a.score_level as "scoreLevel",
+		a.batch as "batch",
+		b.sub_name AS "enterpriseBase.subName"
+	</sql>
+	
+	<sql id="gradeRecordJoins">
+	
+		LEFT JOIN  crd_enterprise_base  b on a.sub_id = b.id
+	</sql>
+    
+	<select id="get" resultType="GradeRecord">
+		SELECT 
+			<include refid="gradeRecordColumns"/>
+		FROM crd_grade_record a
+		<include refid="gradeRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GradeRecord">
+		SELECT 
+			<include refid="gradeRecordColumns"/>
+		FROM crd_grade_record a
+		<include refid="gradeRecordJoins"/>
+		<where>
+			<if test="enterpriseBase != null and enterpriseBase.subName != null and enterpriseBase.subName != ''">
+				AND b.sub_name like 
+				<if test="dbName == 'mysql'">CONCAT('%', #{enterpriseBase.subName}, '%')</if>
+			</if>
+			<if test="subType != null and subType != ''">
+				AND a.sub_type = #{subType}
+			</if>
+			<if test="subId != null and subId != ''">
+				AND a.sub_id = #{subId}
+			</if>
+			<if test="score != null and score != ''">
+				AND a.score = #{score}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="beginTime != null and beginTime != ''">
+				<![CDATA[ AND a.create_date >=  #{beginTime} ]]>
+			</if>
+			<if test="endTime != null and endTime != ''">
+				<![CDATA[ AND a.create_date <=  #{endTime} ]]>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY create_date desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GradeRecord">
+		SELECT 
+			<include refid="gradeRecordColumns"/>
+		FROM crd_grade_record a
+		<include refid="gradeRecordJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO crd_grade_record(
+			id,
+			sub_type,
+			sub_id,
+			score,
+			create_date,
+			status,
+			content,
+			limit_level,
+			final_level,
+			batch,
+			score_level
+		) VALUES (
+			crd_nextval('recordSeq'),
+			#{subType},
+			#{subId},
+			#{score},
+			#{createDate},
+			#{status},
+			#{content},
+			#{limitLevel},
+			#{finalLevel},
+			#{batch},
+			#{scoreLevel}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE crd_grade_record SET 	
+			sub_type = #{subType},
+			sub_id = #{subId},
+			score = #{score},
+			status = #{status},
+			content = #{content},
+			limit_level = #{limitLevel},
+			final_level = #{finalLevel}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM crd_grade_record
+		WHERE id = #{id}
+	</update>
+	
+	
+	
+	 <resultMap id="detailResult" type="com.amass.credit.modules.graderecord.entity.GradeRecordDetailVo">
+		<result property="fatherCatName" column="fatherCatName" />
+		<result property="fatherCatId" column="fatherCatId" />
+		<!-- 评分选项值 -->
+		<collection property="gradeItemsVo" ofType="com.amass.credit.modules.graderecord.entity.GradeItemsVo">
+			<id property="itemsName" column="gradeItemsVo.itemsName" />
+			<id property="optName" column="gradeItemsVo.optName" />
+			<id property="score" column="gradeItemsVo.score" />
+		</collection>
+		
+	</resultMap>
+	
+	<select id="selectGradeRdDetail" resultMap="detailResult">
+	
+			SELECT
+				a.id,
+				b.item_name as "gradeItemsVo.itemsName",
+				b.child_id  as "childId",
+				b.father_id  as "fatherCatId",
+				c.option_name as "gradeItemsVo.optName",
+				c.score as "gradeItemsVo.score",
+				d.cate_name as "fatherCatName"
+			FROM
+				crd_grade_items_opt a
+			LEFT JOIN crd_grade_items b ON a.item_id = b.id
+			LEFT JOIN crd_grade_option c ON a.opt_id = c.id
+			left join crd_grade_category d on d.id = b.father_id
+			where sub_id =#{subId}
+			and a.batch=#{batch}
+			ORDER BY child_id DESC
+	</select>
+	
+	<!-- 出租屋主体信用记录查询 关联出租屋表 -->
+	<sql id="houseGradeRecordColumns">
+		a.id AS "id",
+		a.sub_type AS "subType",
+		a.sub_id AS "subId",
+		a.score AS "score",
+		a.create_date AS "createDate",
+		a.status AS "status",
+		a.content AS "content",
+		a.limit_level AS "limitLevel",
+		a.final_level AS "finalLevel",
+		a.score_level as "scoreLevel",
+		b.house_code AS "houseBase.houseCode",
+		b.house_addr AS "houseBase.houseAddr"
+	</sql>
+	
+	<select id="findHouseGradeRecordList" resultType="GradeRecord">
+		SELECT 
+			<include refid="houseGradeRecordColumns"/>
+		FROM crd_grade_record a
+		
+		LEFT JOIN  crd_renthouse_base  b on a.sub_id = b.id
+		<where>
+			
+			<if test="houseBase != null and houseBase.houseCode != null and houseBase.houseCode != ''">
+				AND b.house_code like 
+				<if test="dbName == 'mysql'">CONCAT('%', #{houseBase.houseCode}, '%')</if>
+			</if>
+			<if test="subType != null and subType != ''">
+				AND a.sub_type = #{subType}
+			</if>
+			<if test="subId != null and subId != ''">
+				AND a.sub_id = #{subId}
+			</if>
+			<if test="score != null and score != ''">
+				AND a.score = #{score}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="beginTime != null and beginTime != ''">
+				<![CDATA[ AND a.create_date >=  #{beginTime} ]]>
+			</if>
+			<if test="endTime != null and endTime != ''">
+				<![CDATA[ AND a.create_date <=  #{endTime} ]]>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+
+</mapper>

@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.gradelimit.dao.limitrule.GradeRuleDao">
+    
+	<sql id="gradeRuleColumns">
+		a.id AS "id",
+		a.item_id AS "itemId",
+		a.rule_type AS "ruleType",
+		a.rule_name AS "ruleName",
+		a.refer_table AS "referTable",
+		a.refer_field AS "referField",
+		a.refer_equation AS "referEquation",
+		a.refer_val AS "referVal",
+		a.refer_condit AS "referCondit",
+		a.item_level AS "itemLevel",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.ext1 AS "ext1",
+		a.ext2 AS "ext2",
+		a.ext3 AS "ext3"
+	</sql>
+	
+	<sql id="gradeRuleJoins">
+	</sql>
+    
+	<select id="get" resultType="GradeRule">
+		SELECT 
+			<include refid="gradeRuleColumns"/>
+		FROM crd_grade_rule a
+		<include refid="gradeRuleJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GradeRule">
+		SELECT 
+			<include refid="gradeRuleColumns"/>
+		FROM crd_grade_rule a
+		<include refid="gradeRuleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="itemId != null and itemId != ''">
+				AND a.item_id = #{itemId}
+			</if>
+			<if test="ruleType != null and ruleType != ''">
+				AND a.rule_type = #{ruleType}
+			</if>
+			<if test="referTable != null and referTable != ''">
+				AND a.refer_table = #{referTable}
+			</if>
+			<if test="referField != null and referField != ''">
+				AND a.refer_field = #{referField}
+			</if>
+			<if test="referEquation != null and referEquation != ''">
+				AND a.refer_equation = #{referEquation}
+			</if>
+			<if test="referVal != null and referVal != ''">
+				AND a.refer_val = #{referVal}
+			</if>
+			<if test="referCondit != null and referCondit != ''">
+				AND a.refer_condit = #{referCondit}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GradeRule">
+		SELECT 
+			<include refid="gradeRuleColumns"/>
+		FROM crd_grade_rule a
+		<include refid="gradeRuleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="itemId != null and itemId != ''">
+				AND a.item_id = #{itemId}
+			</if>
+			<if test="ruleType != null and ruleType != ''">
+				AND a.rule_type = #{ruleType}
+			</if>
+			<if test="referTable != null and referTable != ''">
+				AND a.refer_table = #{referTable}
+			</if>
+			<if test="referField != null and referField != ''">
+				AND a.refer_field = #{referField}
+			</if>
+			<if test="referEquation != null and referEquation != ''">
+				AND a.refer_equation = #{referEquation}
+			</if>
+			<if test="referVal != null and referVal != ''">
+				AND a.refer_val = #{referVal}
+			</if>
+			<if test="referCondit != null and referCondit != ''">
+				AND a.refer_condit = #{referCondit}
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO crd_grade_rule(
+			id,
+			item_id,
+			rule_type,
+			rule_name,
+			refer_table,
+			refer_field,
+			refer_equation,
+			refer_val,
+			refer_condit,
+			item_level,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			ext1,
+			ext2,
+			ext3
+		) VALUES (
+			crd_nextval('ruleSeq'),
+			#{itemId},
+			#{ruleType},
+			#{ruleName},
+			#{referTable},
+			#{referField},
+			#{referEquation},
+			#{referVal},
+			#{referCondit},
+			#{itemLevel},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{ext1},
+			#{ext2},
+			#{ext3}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE crd_grade_rule SET 	
+			item_id = #{itemId},
+			rule_type = #{ruleType},
+			rule_name = #{ruleName},
+			refer_table = #{referTable},
+			refer_field = #{referField},
+			refer_equation = #{referEquation},
+			refer_val = #{referVal},
+			refer_condit = #{referCondit},
+			item_level = #{itemLevel},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			ext1 = #{ext1},
+			ext2 = #{ext2},
+			ext3 = #{ext3}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findTableColumnMap" resultType="java.util.Map">
+		SELECT t.COLUMN_NAME AS name,t.COLUMN_COMMENT AS comments
+			FROM information_schema.`COLUMNS` t 
+			WHERE t.TABLE_SCHEMA = (select database())
+				AND t.TABLE_NAME = upper(#{name})
+			
+			ORDER BY t.ORDINAL_POSITION
+	</select>
+	
+	<update id="delete">
+		UPDATE crd_grade_rule SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

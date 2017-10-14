@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.enterprise.dao.baseinfo.EnterpriseBaseDao">
+    
+	<sql id="enterpriseBaseColumns">
+		a.id AS "id",
+		a.sub_name AS "subName",
+		a.credit_no AS "creditNo",
+		a.tax_no AS "taxNo",
+		a.org_registry AS "orgRegistry",
+		a.org_code AS "orgCode",
+		a.reg_addr AS "regAddr",
+		a.business_scop AS "businessScop",
+		a.business_way AS "businessWay",
+		a.business_type AS "businessType",
+		a.setup_date AS "setupDate",
+		a.tel_no AS "telNo",
+		a.license_name AS "licenseName",
+		a.area_total AS "areaTotal",
+		a.num_of_people AS "numOfPeople",
+		a.creat_date AS "creatDate",
+		a.del_flag AS "delFlag",
+		a.is_check AS "isCheck",
+		a.sub_flag AS "subFlag",
+		a.update_date AS "updateDate"
+	</sql>
+	
+	<sql id="enterpriseBaseJoins">
+	</sql>
+    
+	<select id="get" resultType="EnterpriseBase">
+		SELECT 
+			<include refid="enterpriseBaseColumns"/>
+		FROM crd_enterprise_base a
+		<include refid="enterpriseBaseJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="EnterpriseBase">
+		SELECT 
+			<include refid="enterpriseBaseColumns"/>
+		FROM crd_enterprise_base a
+		<include refid="enterpriseBaseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="subName != null and subName != ''">
+				AND a.sub_name = #{subName}
+			</if>
+			<if test="creditNo != null and creditNo != ''">
+				AND a.credit_no = #{creditNo}
+			</if>
+			<if test="orgRegistry != null and orgRegistry != ''">
+				AND a.org_registry = #{orgRegistry}
+			</if>
+			<if test="orgCode != null and orgCode != ''">
+				AND a.org_code = #{orgCode}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="EnterpriseBase">
+		SELECT 
+			<include refid="enterpriseBaseColumns"/>
+		FROM crd_enterprise_base a
+		<include refid="enterpriseBaseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO crd_enterprise_base(
+			id,
+			sub_name,
+			credit_no,
+			tax_no,
+			org_registry,
+			org_code,
+			reg_addr,
+			business_scop,
+			business_way,
+			business_type,
+			setup_date,
+			tel_no,
+			license_name,
+			area_total,
+			num_of_people,
+			creat_date,
+			del_flag,
+			is_check,
+			sub_flag,
+			update_date
+		) VALUES (
+			#{id},
+			#{subName},
+			#{creditNo},
+			#{taxNo},
+			#{orgRegistry},
+			#{orgCode},
+			#{regAddr},
+			#{businessScop},
+			#{businessWay},
+			#{businessType},
+			#{setupDate},
+			#{telNo},
+			#{licenseName},
+			#{areaTotal},
+			#{numOfPeople},
+			#{creatDate},
+			#{delFlag},
+			#{isCheck},
+			#{subFlag},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE crd_enterprise_base SET 	
+			sub_name = #{subName},
+			credit_no = #{creditNo},
+			tax_no = #{taxNo},
+			org_registry = #{orgRegistry},
+			org_code = #{orgCode},
+			reg_addr = #{regAddr},
+			business_scop = #{businessScop},
+			business_way = #{businessWay},
+			business_type = #{businessType},
+			setup_date = #{setupDate},
+			tel_no = #{telNo},
+			license_name = #{licenseName},
+			area_total = #{areaTotal},
+			num_of_people = #{numOfPeople},
+			creat_date = #{creatDate},
+			is_check = #{isCheck},
+			sub_flag = #{subFlag},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE crd_enterprise_base SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

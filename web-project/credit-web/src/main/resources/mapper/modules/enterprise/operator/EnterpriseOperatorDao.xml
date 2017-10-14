@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.enterprise.dao.operator.EnterpriseOperatorDao">
+    
+	<sql id="enterpriseOperatorColumns">
+		a.id AS "id",
+		a.sub_id AS "subId",
+		a.operator_name AS "operatorName",
+		a.operator_edu AS "operatorEdu",
+		a.operator_tel AS "operatorTel",
+		a.operator_addr AS "operatorAddr",
+		a.work_experience AS "workExperience",
+		a.professional AS "professional",
+		a.native_place AS "nativePlace",
+		a.card_type AS "cardType",
+		a.card_no AS "cardNo",
+		a.politics AS "politics",
+		a.remark AS "remark",
+		a.ext1 AS "ext1",
+		a.ext2 AS "ext2",
+		a.ext3 AS "ext3",
+		a.create_date AS "createDate"
+	</sql>
+	
+	<sql id="enterpriseOperatorJoins">
+	</sql>
+    
+	<select id="get" resultType="EnterpriseOperator">
+		SELECT 
+			<include refid="enterpriseOperatorColumns"/>
+		FROM crd_enterprise_operator a
+		<include refid="enterpriseOperatorJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getOneBySubId" resultType="EnterpriseOperator">
+		SELECT 
+			<include refid="enterpriseOperatorColumns"/>
+		FROM crd_enterprise_operator a
+		<include refid="enterpriseOperatorJoins"/>
+		WHERE a.sub_id = #{subId}
+	</select>
+	
+	<select id="findList" resultType="EnterpriseOperator">
+		SELECT 
+			<include refid="enterpriseOperatorColumns"/>
+		FROM crd_enterprise_operator a
+		<include refid="enterpriseOperatorJoins"/>
+		<where>
+			
+			<if test="subId != null and subId != ''">
+				AND a.sub_id = #{subId}
+			</if>
+			<if test="operatorName != null and operatorName != ''">
+				AND a.operator_name = #{operatorName}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="EnterpriseOperator">
+		SELECT 
+			<include refid="enterpriseOperatorColumns"/>
+		FROM crd_enterprise_operator a
+		<include refid="enterpriseOperatorJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO crd_enterprise_operator(
+			id,
+			sub_id,
+			operator_name,
+			operator_edu,
+			operator_tel,
+			operator_addr,
+			work_experience,
+			professional,
+			native_place,
+			card_type,
+			card_no,
+			politics,
+			remark,
+			ext1,
+			ext2,
+			ext3,
+			create_date
+		) VALUES (
+			#{id},
+			#{subId},
+			#{operatorName},
+			#{operatorEdu},
+			#{operatorTel},
+			#{operatorAddr},
+			#{workExperience},
+			#{professional},
+			#{nativePlace},
+			#{cardType},
+			#{cardNo},
+			#{politics},
+			#{remark},
+			#{ext1},
+			#{ext2},
+			#{ext3},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE crd_enterprise_operator SET 	
+			sub_id = #{subId},
+			operator_name = #{operatorName},
+			operator_edu = #{operatorEdu},
+			operator_tel = #{operatorTel},
+			operator_addr = #{operatorAddr},
+			work_experience = #{workExperience},
+			professional = #{professional},
+			native_place = #{nativePlace},
+			card_type = #{cardType},
+			card_no = #{cardNo},
+			politics = #{politics},
+			remark = #{remark},
+			ext1 = #{ext1},
+			ext2 = #{ext2},
+			ext3 = #{ext3}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM crd_enterprise_operator
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

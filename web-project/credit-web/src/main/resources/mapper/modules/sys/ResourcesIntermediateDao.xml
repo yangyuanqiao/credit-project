@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.sys.dao.ResourcesIntermediateDao">
+    <sql id="resinterColumns">
+    	a.id AS "id",
+    	a.fast_id AS "fastId",
+    	a.primary_key AS "primaryKey",
+    	a.table_name AS "tableName"
+    </sql>
+    
+    <sql id="resinterJoins">
+    </sql>
+	
+	<!-- 根据编号获得 -->
+	<select id="get" resultType="ResourcesIntermediate">
+		SELECT
+			<include refid="resinterColumns"/>
+		FROM resources_intermediate a
+		<include refid="resinterJoins"/>
+		WHERE 1=1
+		<if test="null ! = id and id != ''">
+			AND a.id = #{id}
+		</if> 
+		<if test="null ! = fast_id and fast_id != ''">
+			AND a.fast_id = #{fast_id}
+		</if>
+	</select>
+	
+	
+	<!-- 查询全部数目 -->
+	<select id="findAllCount" resultType="long">
+		SELECT
+			COUNT(1)
+		FROM resources_intermediate a
+	</select>
+	<select id="findList" resultType="com.amass.credit.modules.sys.entity.ResourcesIntermediate">
+		SELECT 
+		t.id AS "id",
+		t.`PRIMARY_KEY` as "primaryKey",
+		t.`TABLE_NAME` AS "tableName",
+		r.fast_id as "resource.fastId",
+		r.url as "resource.url",
+		r.type as "resource.type",
+		r.fileextname as "resource.fileextname",
+		r.system_terrace as "resource.systemTerrace",
+		r.flag as "resource.flag",
+		r.dht_url as "resource.dhtUrl"
+		FROM resources_intermediate t 
+		INNER JOIN resources r ON t.`FAST_ID` = r.`FAST_ID`
+		WHERE
+		1=1
+		<if test="tableName != null and tableName != ''">
+			AND t.TABLE_NAME = #{tableName}
+		</if>
+		<if test="primaryKey != null and primaryKey != ''">
+			AND t.primary_key = #{primaryKey}
+		</if>
+	</select>
+	
+	<!-- 插入 -->
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.amass.credit.modules.sys.entity.ResourcesIntermediate">
+		INSERT INTO resources_intermediate(
+			fast_id,
+			primary_key,
+			table_name
+		) VALUES (
+			#{fastId},
+			#{primaryKey},
+			#{tableName}
+		)
+	</insert>
+	
+	<!-- 更新 -->
+	<update id="update">
+		UPDATE resources_intermediate SET 
+			fast_id = #{fastId},
+			primary_key = #{primaryKey},
+			table_name = #{tableName}
+		WHERE id = #{id}
+	</update>
+	<!-- 删除关联关系 -->
+	<update id = "delete">
+		DELETE  FROM resources_intermediate WHERE primary_key=#{primaryKey} and table_name=#{tableName}
+	</update>
+	
+	<update id = "deletebyId">
+		DELETE  FROM resources_intermediate WHERE id = #{id}
+	</update>
+	<update id = "deletebyIds" >
+		DELETE  FROM resources_intermediate WHERE id in( #{id})
+	</update>
+	
+</mapper>

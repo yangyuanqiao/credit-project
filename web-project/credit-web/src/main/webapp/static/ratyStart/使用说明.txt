@@ -1,0 +1,13 @@
+参考index.html 用法
+
+依赖：
+
+jquery.js
+jquery.rater.js
+rater.css
+
+star.gif
+star_small.gif
+
+适合：IE6,IE7, IE8, Firefox, Opera, Chrome, Safari
+ 

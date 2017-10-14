@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:jdbc="http://www.springframework.org/schema/jdbc" 
+    xmlns:jee="http://www.springframework.org/schema/jee"
+    xmlns:tx="http://www.springframework.org/schema/tx" 
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="  
+            http://www.springframework.org/schema/beans  
+            http://www.springframework.org/schema/beans/spring-beans.xsd  
+            http://www.springframework.org/schema/context  
+            http://www.springframework.org/schema/context/spring-context.xsd  
+            http://www.springframework.org/schema/jdbc  
+            http://www.springframework.org/schema/jdbc/spring-jdbc.xsd  
+            http://www.springframework.org/schema/jee 
+            http://www.springframework.org/schema/jee/spring-jee.xsd  
+            http://www.springframework.org/schema/tx 
+            http://www.springframework.org/schema/tx/spring-tx.xsd  
+            http://www.springframework.org/schema/util  
+            http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <!-- 将模具企业评分任务加载到quartz配置中 --> 
+    <bean id="taskJob"
+        class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <!-- 任务完成之后是否依然保留到数据库，默认false -->
+        <property name="durability" value="true" />
+        <property name="requestsRecovery" value="true" />
+        <!-- 任务的实现类，必须 -->
+        <property name="jobClass">
+          <value>com.amass.credit.modules.quartz.jobs.CommJobBean</value> 
+        </property>
+        <!-- 用来给作业提供数据支持的数据结构 -->
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="targetObject" value="jobForModuleScoring" /><!-- 调用的类 -->
+                <entry key="targetMethod" value="execute" /><!-- 调用类中的方法 -->
+            </map>
+          
+            
+        </property>
+        <property name="description" value="模具企业通用信息任务" />
+    </bean>
+ 	<!-- 定义模具企业评分任务触发时间 -->
+    <bean id="taskTrigger"
+        class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <!-- 触发器与任务绑定 -->
+        <property name="jobDetail" ref="taskJob" />
+        <property name="cronExpression" value="0 0/8 * * * ?" /><!-- 规则表达式 每隔30秒执行一次 -->
+    </bean>
+    
+    
+    
+	<!-- 将出租屋评分信息任务加载到quartz配置中 --> 
+    <bean id="renthousetaskJob"
+        class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <!-- 任务完成之后是否依然保留到数据库，默认false -->
+        <property name="durability" value="true" />
+        <property name="requestsRecovery" value="true" />
+        <!-- 任务的实现类，必须 -->
+        <property name="jobClass">
+          <value>com.amass.credit.modules.quartz.jobs.CommJobBean</value> 
+        </property>
+        <!-- 用来给作业提供数据支持的数据结构 -->
+        <property name="jobDataAsMap">
+             <map>
+               	<entry key="targetObject" value="jobForRentHouseScoring" /><!-- 调用的类 -->
+              	<entry key="targetMethod" value="execute" /><!-- 调用类中的方法 -->
+            </map>
+        </property>
+        <property name="description" value="出租屋评分信息任务" />
+    </bean>
+
+ 	<!-- 定义出租屋评分任务触发时间 -->
+    <bean id="renthousetaskTrigger"
+        class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <!-- 触发器与任务绑定 -->
+        <property name="jobDetail" ref="renthousetaskJob" />
+        <property name="cronExpression" value="0 0/5 * * * ?" /><!-- 规则表达式 每隔5分钟执行一次 -->
+    </bean>
+
+
+   
+    
+    <!-- 总管理类 如果将lazy-init='false'那么容器启动就会执行调度程序  -->
+    <bean id="taskScheduler" lazy-init="false" autowire="no"
+        class="org.springframework.scheduling.quartz.SchedulerFactoryBean"
+        destroy-method="destroy">
+        <property name="overwriteExistingJobs" value="true" />
+        <!-- 启动延时 -->
+        <property name="startupDelay" value="5" />
+        <!-- 是否自动启动 -->
+        <property name="autoStartup" value="true" />
+        <!-- 启动的定时器 -->
+        <property name="triggers">
+            <list>
+                <ref bean="taskTrigger" />
+                 <ref bean="renthousetaskTrigger" />
+            </list>
+        </property>
+
+        <property name="applicationContextSchedulerContextKey" value="applicationContext" />
+        <property name="configLocation" value="classpath:quartz.properties" />
+    </bean>
+
+</beans>

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.renthouse.dao.baseinfo.RenthouseBaseDao">
+    
+	<sql id="renthouseBaseColumns">
+		a.id AS "id",
+		a.house_code AS "houseCode",
+		a.house_num AS "houseNum",
+		a.rent_code AS "rentCode",
+		a.is_safe_civilized AS "isSafeCivilized",
+		a.house_addr AS "houseAddr",
+		a.has_monitor AS "hasMonitor",
+		a.has_insurance AS "hasInsurance",
+		a.subject_type AS "subjectType",
+		a.level_num AS "levelNum",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="renthouseBaseJoins">
+	</sql>
+    
+	<select id="get" resultType="RenthouseBase">
+		SELECT 
+			<include refid="renthouseBaseColumns"/>
+		FROM crd_renthouse_base a
+		<include refid="renthouseBaseJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="RenthouseBase">
+		SELECT 
+			<include refid="renthouseBaseColumns"/>
+		FROM crd_renthouse_base a
+		<include refid="renthouseBaseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="houseCode != null and houseCode != ''">
+				AND a.house_code = #{houseCode}
+			</if>
+			<if test="houseNum != null and houseNum != ''">
+				AND a.house_num = #{houseNum}
+			</if>
+			<if test="rentCode != null and rentCode != ''">
+				AND a.rent_code = #{rentCode}
+			</if>
+			<if test="houseAddr != null and houseAddr != ''">
+				AND a.house_addr like  CONCAT('%', #{houseAddr}, '%')
+			</if>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="RenthouseBase">
+		SELECT 
+			<include refid="renthouseBaseColumns"/>
+		FROM crd_renthouse_base a
+		<include refid="renthouseBaseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO crd_renthouse_base(
+			id,
+			house_code,
+			house_num,
+			rent_code,
+			is_safe_civilized,
+			house_addr,
+			has_monitor,
+			has_insurance,
+			subject_type,
+			level_num,
+			create_date,
+			create_by,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{houseCode},
+			#{houseNum},
+			#{rentCode},
+			#{isSafeCivilized},
+			#{houseAddr},
+			#{hasMonitor},
+			#{hasInsurance},
+			#{subjectType},
+			#{levelNum},
+			#{createDate},
+			#{createBy.id},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE crd_renthouse_base SET 	
+			house_code = #{houseCode},
+			house_num = #{houseNum},
+			rent_code = #{rentCode},
+			is_safe_civilized = #{isSafeCivilized},
+			house_addr = #{houseAddr},
+			has_monitor = #{hasMonitor},
+			has_insurance = #{hasInsurance},
+			subject_type = #{subjectType},
+			level_num = #{levelNum},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE crd_renthouse_base SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 待评分出租屋主体信息  -->
+		<select id="findAllRentHouseList" resultType="com.amass.credit.modules.renthouse.entity.baseinfo.RenthouseBase">
+			SELECT
+					a.id AS "id",
+					a.house_code AS "house_code",
+					a.house_addr AS "houseAddr"
+		
+			FROM
+				crd_renthouse_base A
+			WHERE
+				A.del_flag = 0
+				AND id not IN (
+					SELECT
+						sub_id
+							FROM
+							crd_grade_record
+							WHERE STATUS=1
+				)
+		</select>
+	
+</mapper>

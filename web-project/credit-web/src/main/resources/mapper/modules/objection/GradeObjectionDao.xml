@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.objection.dao.GradeObjectionDao">
+    
+	<sql id="gradeObjectionColumns">
+		a.id AS "id",
+		a.sub_id AS "subId",
+		a.apply_user AS "applyUser",
+		a.apply_tel AS "applyTel",
+		a.app_email AS "appEmail",
+		a.apply_type AS "applyType",
+		a.apply_reason AS "applyReason",
+		a.apply_time AS "applyTime",
+		a.apply_prove AS "applyProve",
+		a.remark AS "remark",
+		a.apply_status AS "applyStatus",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="gradeObjectionJoins">
+	</sql>
+    
+	<select id="get" resultType="GradeObjection">
+		SELECT 
+			<include refid="gradeObjectionColumns"/>
+		FROM crd_grade_objection a
+		<include refid="gradeObjectionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GradeObjection">
+		SELECT 
+			<include refid="gradeObjectionColumns"/>
+		FROM crd_grade_objection a
+		<include refid="gradeObjectionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="subId != null and subId != ''">
+				AND a.sub_id = #{subId}
+			</if>
+			<if test="applyType != null and applyType != ''">
+				AND a.apply_type = #{applyType}
+			</if>
+			<if test="applyTime != null and applyTime != ''">
+				AND a.apply_time = #{applyTime}
+			</if>
+			<if test="applyStatus != null and applyStatus != ''">
+				AND a.apply_status = #{applyStatus}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GradeObjection">
+		SELECT 
+			<include refid="gradeObjectionColumns"/>
+		FROM crd_grade_objection a
+		<include refid="gradeObjectionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO crd_grade_objection(
+			id,
+			sub_id,
+			apply_user,
+			apply_tel,
+			app_email,
+			apply_type,
+			apply_reason,
+			apply_time,
+			apply_prove,
+			remark,
+			apply_status,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{subId},
+			#{applyUser},
+			#{applyTel},
+			#{appEmail},
+			#{applyType},
+			#{applyReason},
+			#{applyTime},
+			#{applyProve},
+			#{remark},
+			#{applyStatus},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE crd_grade_objection SET 	
+			sub_id = #{subId},
+			apply_user = #{applyUser},
+			apply_tel = #{applyTel},
+			app_email = #{appEmail},
+			apply_type = #{applyType},
+			apply_reason = #{applyReason},
+			apply_time = #{applyTime},
+			apply_prove = #{applyProve},
+			remark = #{remark},
+			apply_status = #{applyStatus},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE crd_grade_objection SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

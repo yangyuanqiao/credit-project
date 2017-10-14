@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.quartz.dao.GradeDao">
+    
+    <resultMap id="gradeResult" type="com.amass.credit.modules.quartz.entity.GradeItems">
+    	<!-- 评分选项 -->
+		<id property="id" column="id" />
+		<result property="categoryId" column="categoryId" />
+		<result property="itemName" column="itemName" />
+		<result property="itemCode" column="itemCode" />
+		<result property="itemStatus" column="itemStatus" />
+		<result property="remark" column="remark" />
+		<!-- 评分选项值 -->
+		<collection property="optionList" ofType="com.amass.credit.modules.quartz.entity.GradeOption">
+			<id property="id" column="optionList.id" />
+			<id property="itemsId" column="optionList.itemsId" />
+			<id property="optionName" column="optionList.optionName" />
+			<id property="optionCode" column="optionList.optionCode" />
+			<id property="score" column="optionList.score" />
+			<id property="sort" column="optionList.sort" />
+			
+		</collection>
+		<!-- 评分规则 -->
+		<collection property="ruleList" ofType="com.amass.credit.modules.quartz.entity.GradeRules">
+				<id property="id" column="ruleList.id" />
+				<id property="ruleType" column="ruleList.ruleType" />
+				<id property="ruleName" column="ruleList.ruleName" />
+				<id property="referTable" column="ruleList.referTable" />
+				<id property="referField" column="ruleList.referField" />
+				<id property="referEquation" column="ruleList.referEquation" />
+				<id property="referVal" column="ruleList.referVal" />
+				<id property="referCondit" column="ruleList.referCondit" />
+				<id property="optionItem" column="ruleList.optionItem" />
+				<id property="itemLevel" column="ruleList.itemLevel" />
+		</collection>
+		
+	</resultMap>
+	
+    <sql id="roleColumns">
+    	A.id AS id,
+		A.item_name AS "itemName",
+		A.remark,
+		B.id AS "optionList.id",
+		B.option_name AS "optionList.optionName",
+		B.option_code AS "optionList.optionCode",
+		B.score AS "optionList.score",
+		C.id AS "ruleList.id",
+		C.rule_type AS "ruleList.ruleType",
+		C.item_level AS "ruleList.itemLevel",
+		C.refer_table AS "ruleList.referTable",
+		C.refer_field AS "ruleList.referField",
+		C.refer_equation as "ruleList.referEquation",
+  		C.refer_val AS "ruleList.referVal",
+  		C.refer_condit as "ruleList.referCondit",
+  		C.rule_name  AS "ruleList.ruleName"
+    </sql>
+    
+
+	<select id="scanGradeItems" resultMap="gradeResult">
+				SELECT
+			<include refid="roleColumns"/>
+		
+			FROM
+				crd_grade_items A
+				LEFT JOIN crd_grade_option B ON a.id = b.items_id
+				LEFT JOIN crd_grade_rule C ON C.item_id = a.id
+			WHERE
+				A.del_flag = 0
+				and c.del_flag =0
+  				and b.del_flag=0
+  				and a.sub_type=#{subType}
+				
+	</select>
+	<!-- 实现动态调用表名和字段名，就不能使用预编译了，需添加statementType="STATEMENT"" 。statementType：STATEMENT（非预编译），PREPARED（预编译）或CALLABLE中的任意一个，这就告诉 MyBatis 
+	分别使用Statement，PreparedStatement或者CallableStatement。默认：PREPARED。这里显然不能使用预编译，要改成非预编译。 -->
+	<select id="getFeild" resultType="java.lang.String" parameterType="java.util.Map" statementType="STATEMENT">
+					SELECT
+			${columns}
+			from ${tableName}
+			where id = ${id}
+			
+			<if test="referCondit != null and referCondit != ''">
+				AND  ${referCondit}
+			</if>
+			
+		</select>
+		
+		<select id="countFeild" resultType="java.lang.String" parameterType="java.util.Map" statementType="STATEMENT">
+					SELECT  count(1)
+			from ${tableName}
+			where id = ${id} 
+			<if test="referCondit != null and referCondit != ''">
+				AND  ${referCondit}
+			</if>
+		</select>
+		
+		
+		
+		<!-- 评分明细 -->
+		<insert id="insertGradeDetail">
+			INSERT INTO crd_grade_items_opt(
+				id, 
+				sub_id, 
+				item_id, 
+				opt_id, 
+				create_date, 
+				update_date,
+				score, 
+				batch
+			) VALUES (
+				crd_nextval('recordSeq'), 
+				#{subId}, 
+				#{itemId}, 
+				#{optId}, 
+				#{createDate},  
+				#{updateDate}, 
+				#{score}, 
+				#{batch}
+			)
+		</insert>
+		
+		<!-- 批量插入评分明细 -->
+		<insert id="insertGradeDetailBatch" parameterType="java.util.List" >
+			INSERT INTO crd_grade_items_opt(
+				id, 
+				sub_id, 
+				item_id, 
+				opt_id, 
+				create_date, 
+				update_date,
+				score, 
+				batch
+			) VALUES 
+			<foreach collection ="list" item="itemsOpt" index= "index" separator =",">
+				(
+					crd_nextval('recordSeq'), 
+					#{itemsOpt.subId}, 
+					#{itemsOpt.itemId}, 
+					#{itemsOpt.optId}, 
+					#{itemsOpt.createDate},  
+					#{itemsOpt.updateDate}, 
+					#{itemsOpt.score}, 
+					#{itemsOpt.batch}
+				)
+			</foreach >
+		</insert>
+		
+		<sql id="enterpriseColumns">
+			a.id AS "id",
+			a.sub_name AS "subName",
+			a.credit_no AS "creditNo"
+		
+		</sql>
+		
+		
+		<!--  -->
+		<select id="sumScore" resultType="java.lang.Long">
+			SELECT SUM(score) FROM  crd_grade_items_opt a  WHERE  a.sub_id =#{subId} and a.batch=#{batch}  GROUP BY sub_id
+		</select>
+		
+		
+		<!-- 评分结果记录 -->
+		<insert id="insertGradeRecord">
+			INSERT INTO crd_grade_record(
+				id, 
+				sub_type, 
+				sub_id, 
+				score, 
+				create_date, 
+				status,
+				limit_level, 
+				final_level,
+				batch,
+				score_level
+			) VALUES (
+				#{id}, 
+				#{subType}, 
+				#{subId}, 
+				#{score}, 
+				#{createDate},  
+				#{status}, 
+				#{limitLevel}, 
+				#{finalLevel},
+				#{batch},
+				#{scoreLevel}
+			)
+		</insert>
+		
+		
+		
+		<!-- 待评分企业主体信息 -->
+		<select id="findAllList" resultType="com.amass.credit.modules.quartz.entity.EnterpriseBase">
+				SELECT
+			<include refid="enterpriseColumns"/>
+		
+			FROM
+				crd_enterprise_base A
+			WHERE
+				A.del_flag = 0
+				AND id not IN (
+					SELECT
+						sub_id
+							FROM
+							crd_grade_record
+							WHERE STATUS=1
+				)
+		</select>
+		
+		<!-- 生成批次号 -->
+		<select id="selectBatch" resultType="java.lang.String">
+				select crd_nextval('batch_seq') from dual;
+				
+		</select>
+		
+		
+</mapper>

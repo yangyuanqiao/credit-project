@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.creditact.dao.event.RecordsEventDao">
+    
+	<sql id="recordsEventColumns">
+		a.id AS "id",
+		a.sub_type AS "subType",
+		a.sub_id AS "subId",
+		a.event_type AS "eventType",
+		a.event_name AS "eventName",
+		a.event_detail AS "eventDetail",
+		a.event_time AS "eventTime",
+		a.deparrment AS "deparrment",
+		a.deal_time AS "dealTime",
+		a.result AS "result",
+		a.create_time AS "createTime",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="recordsEventJoins">
+	</sql>
+    
+	<select id="get" resultType="RecordsEvent">
+		SELECT 
+			<include refid="recordsEventColumns"/>
+		FROM crd_records_event a
+		<include refid="recordsEventJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="RecordsEvent">
+		SELECT 
+			<include refid="recordsEventColumns"/>
+		FROM crd_records_event a
+		<include refid="recordsEventJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="eventType != null and eventType != ''">
+				AND a.event_type = #{eventType}
+			</if>
+			<if test="subId != null and subId != ''">
+				AND a.sub_id = #{subId}
+			</if>
+			<if test="eventName != null and eventName != ''">
+				AND a.event_name = #{eventName}
+			</if>
+			<if test="deparrment != null and deparrment != ''">
+				AND a.deparrment = #{deparrment}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="RecordsEvent">
+		SELECT 
+			<include refid="recordsEventColumns"/>
+		FROM crd_records_event a
+		<include refid="recordsEventJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO crd_records_event(
+			id,
+			sub_type,
+			sub_id,
+			event_type,
+			event_name,
+			event_detail,
+			event_time,
+			deparrment,
+			deal_time,
+			result,
+			create_time,
+			remark,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			crd_nextval('recordSeq'),
+			#{subType},
+			#{subId},
+			#{eventType},
+			#{eventName},
+			#{eventDetail},
+			#{eventTime},
+			#{deparrment},
+			#{dealTime},
+			#{result},
+			#{createTime},
+			#{remark},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE crd_records_event SET 	
+			sub_type = #{subType},
+			sub_id = #{subId},
+			event_type = #{eventType},
+			event_name = #{eventName},
+			event_detail = #{eventDetail},
+			event_time = #{eventTime},
+			deparrment = #{deparrment},
+			deal_time = #{dealTime},
+			result = #{result},
+			create_time = #{createTime},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE crd_records_event SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

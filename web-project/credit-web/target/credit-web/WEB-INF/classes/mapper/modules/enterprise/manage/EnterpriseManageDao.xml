@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.enterprise.dao.manage.EnterpriseManageDao">
+    
+	<sql id="enterpriseManageColumns">
+		a.id AS "id",
+		a.sub_id AS "subId",
+		a.sub_name AS "subName",
+		a.credit_no AS "creditNo",
+		a.income AS "income",
+		a.dept_profit AS "deptProfit",
+		a.main_profit AS "mainProfit",
+		a.assets_profit AS "assetsProfit",
+		a.increase_profit AS "increaseProfit",
+		a.total_assets AS "totalAssets",
+		a.happen_year AS "happenYear",
+		a.create_date AS "createDate",
+		a.ext1 AS "ext1",
+		a.ext2 AS "ext2",
+		a.ext3 AS "ext3",
+		a.ext4 AS "ext4"
+	</sql>
+	
+	<sql id="enterpriseManageJoins">
+	</sql>
+    
+	<select id="get" resultType="EnterpriseManage">
+		SELECT 
+			<include refid="enterpriseManageColumns"/>
+		FROM crd_enterprise_manage a
+		<include refid="enterpriseManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="EnterpriseManage">
+		SELECT 
+			<include refid="enterpriseManageColumns"/>
+		FROM crd_enterprise_manage a
+		<include refid="enterpriseManageJoins"/>
+		<where>
+			
+			<if test="subId != null and subId != ''">
+				AND a.sub_id = #{subId}
+			</if>
+			<if test="subName != null and subName != ''">
+				AND a.sub_name = #{subName}
+			</if>
+			<if test="creditNo != null and creditNo != ''">
+				AND a.credit_no = #{creditNo}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="EnterpriseManage">
+		SELECT 
+			<include refid="enterpriseManageColumns"/>
+		FROM crd_enterprise_manage a
+		<include refid="enterpriseManageJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO crd_enterprise_manage(
+			id,
+			sub_id,
+			sub_name,
+			credit_no,
+			income,
+			dept_profit,
+			main_profit,
+			assets_profit,
+			increase_profit,
+			total_assets,
+			happen_year,
+			create_date,
+			ext1,
+			ext2,
+			ext3,
+			ext4
+		) VALUES (
+			#{id},
+			#{subId},
+			#{subName},
+			#{creditNo},
+			#{income},
+			#{deptProfit},
+			#{mainProfit},
+			#{assetsProfit},
+			#{increaseProfit},
+			#{totalAssets},
+			#{happenYear},
+			#{createDate},
+			#{ext1},
+			#{ext2},
+			#{ext3},
+			#{ext4}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE crd_enterprise_manage SET 	
+			sub_id = #{subId},
+			sub_name = #{subName},
+			credit_no = #{creditNo},
+			income = #{income},
+			dept_profit = #{deptProfit},
+			main_profit = #{mainProfit},
+			assets_profit = #{assetsProfit},
+			increase_profit = #{increaseProfit},
+			total_assets = #{totalAssets},
+			happen_year = #{happenYear},
+			ext1 = #{ext1},
+			ext2 = #{ext2},
+			ext3 = #{ext3},
+			ext4 = #{ext4}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM crd_enterprise_manage
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.sys.dao.ResourcesDao">
+    
+	
+	<insert id="insert">
+		INSERT INTO resources(
+			FAST_ID, 
+			URL, 
+			TYPE, 
+			FILEEXTNAME, 
+			SYSTEM_TERRACE,
+			FLAG, 
+			DHT_URL
+		) VALUES (
+			#{fastId},
+			#{url},
+			#{type},
+			#{fileextname},
+			#{systemTerrace},
+			#{flag},
+			#{dhtUrl}
+		)
+	</insert>
+	
+	
+	
+</mapper>

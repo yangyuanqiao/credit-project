@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.gradelimit.dao.category.GradeLimitDao">
+    
+	<sql id="gradeLimitColumns">
+		a.id AS "id",
+		a.sub_type AS "subType",
+		a.condit_name AS "conditName",
+		a.condit_code AS "conditCode",
+		a.condit_desc AS "conditDesc",
+		a.level_id AS "levelId",
+		a.condit_sort AS "conditSort",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		b.level_name as "gradeLevel.levelName"
+	</sql>
+	
+	<sql id="gradeLimitJoins">
+	 	LEFT JOIN crd_grade_level b on a.level_id=b.id
+	</sql>
+    
+	<select id="get" resultType="GradeLimit">
+		SELECT 
+			<include refid="gradeLimitColumns"/>
+		FROM crd_grade_limit a
+		<include refid="gradeLimitJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GradeLimit">
+		SELECT 
+			<include refid="gradeLimitColumns"/>
+		FROM crd_grade_limit a
+		<include refid="gradeLimitJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="subType != null and subType != ''">
+				AND a.sub_type = #{subType}
+			</if>
+			<if test="conditName != null and conditName != ''">
+				AND a.condit_name = #{conditName}
+			</if>
+			<if test="levelId != null and levelId != ''">
+				AND a.level_id = #{levelId}
+			</if>
+			<if test="updateDate != null and updateDate != ''">
+				AND a.update_date = #{updateDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GradeLimit">
+		SELECT 
+			<include refid="gradeLimitColumns"/>
+		FROM crd_grade_limit a
+		<include refid="gradeLimitJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO crd_grade_limit(
+			id,
+			sub_type,
+			condit_name,
+			condit_code,
+			condit_desc,
+			level_id,
+			condit_sort,
+			create_date,
+			create_by,
+			update_date,
+			del_flag
+		) VALUES (
+			crd_nextval('cateSeq'),
+			#{subType},
+			#{conditName},
+			#{conditCode},
+			#{conditDesc},
+			#{levelId},
+			#{conditSort},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE crd_grade_limit SET 	
+			sub_type = #{subType},
+			condit_name = #{conditName},
+			condit_code = #{conditCode},
+			condit_desc = #{conditDesc},
+			level_id = #{levelId},
+			condit_sort = #{conditSort},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE crd_grade_limit SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<resultMap id="gradeLimitResult" type="com.amass.credit.modules.gradelimit.entity.category.GradeLimit">
+    	<!-- 条件内容项 -->
+		<id property="id" column="id" />
+		<result property="conditName" column="conditName" />
+		<result property="conditDesc" column="itemName" />
+		<result property="levelId" column="itemCode" />
+		<!-- 条件规则 -->
+		<collection property="gradeRule" ofType="com.amass.credit.modules.quartz.entity.GradeRules">
+				<id property="id" column="gradeRule.id" />
+				<id property="ruleType" column="gradeRule.ruleType" />
+				<id property="ruleName" column="gradeRule.ruleName" />
+				<id property="referTable" column="gradeRule.referTable" />
+				<id property="referField" column="gradeRule.referField" />
+				<id property="referEquation" column="gradeRule.referEquation" />
+				<id property="referVal" column="gradeRule.referVal" />
+				<id property="referCondit" column="gradeRule.referCondit" />
+				<id property="optionItem" column="gradeRule.optionItem" />
+				<id property="itemLevel" column="gradeRule.itemLevel" />
+		</collection>
+	</resultMap>
+	<!-- 评分任务用 -->
+	<select id="gradeLimitList" resultMap="gradeLimitResult" >
+			SELECT
+					a.id as "id",
+					a.condit_name as "conditName",
+					a.level_id AS "levelId",
+					C.id AS "gradeRule.id",
+					C.rule_type AS "gradeRule.ruleType",
+					C.item_level AS "gradeRule.itemLevel",
+					C.refer_table AS "gradeRule.referTable",
+					C.refer_field AS "gradeRule.referField",
+					C.refer_equation as "gradeRule.referEquation",
+					C.refer_val AS "gradeRule.referVal",
+					C.refer_condit as "gradeRule.referCondit",
+					C.rule_name AS "gradeRule.ruleName"
+			FROM
+					crd_grade_limit a
+					LEFT JOIN crd_grade_rule c ON a.id = c.item_id
+					WHERE
+					a.del_flag = 0
+					AND C.del_flag = 0
+					
+					AND a.SUB_TYPE=#{subType}
+					
+					ORDER BY a.condit_sort desc;
+			
+	</select>
+	
+	
+	<!-- 查询限制条件明细用 -->
+	<select id="findLimitDetailList" resultType="com.amass.credit.modules.graderecord.entity.GradeLimitDetailVo" parameterType="java.util.HashMap">
+			SELECT
+				a.id AS "limit.id",
+				a.condit_name AS "limit.conditName",
+				a.condit_desc AS "limit.conditDesc",
+				b.limit_result AS "detail.limitResult",
+				c.level_name as "limit.gradeLevel.levelName",
+				c.sort as "limit.gradeLevel.sort"
+			FROM
+				crd_grade_limit a
+			LEFT JOIN crd_grade_limit_detail b ON a.id = b.limit_id
+			LEFT JOIN crd_grade_level c ON c.id = a.level_id
+			WHERE a.del_flag = 0
+			<if test="subId != null and subId != ''">
+				AND b.sub_id = #{subId}
+			</if>
+			<if test="limitResult != null and limitResult != ''">
+				AND	b.limit_result=#{limitResult}
+			</if>
+			<if test="batch != null and batch != ''">
+				AND	b.batch=#{batch}
+			</if>
+			ORDER BY c.sort desc
+	</select>
+	
+	
+</mapper>

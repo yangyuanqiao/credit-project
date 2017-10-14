@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.grade.dao.gradeitems.GradeItemsDao">
+    
+	<sql id="gradeItemsColumns">
+		a.id AS "id",
+		a.father_id AS "fatherId",
+		a.child_id AS "childId",
+		a.item_name AS "itemName",
+		a.item_code AS "itemCode",
+		a.item_status AS "itemStatus",
+		a.sort AS "sort",
+		a.sub_type as "subType",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		b.cate_name as "fatherName",
+		c.cate_name as "childName",
+		d.name AS "createBy.name"
+	</sql>
+	
+	<sql id="gradeItemsJoins">
+		LEFT JOIN crd_grade_category b on a.father_id= b.id
+		LEFT JOIN crd_grade_category c on a.child_id = c.id
+		LEFT JOIN sys_user d ON d.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="GradeItems">
+		SELECT 
+			<include refid="gradeItemsColumns"/>
+		FROM crd_grade_items a
+		<include refid="gradeItemsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GradeItems">
+		SELECT 
+			<include refid="gradeItemsColumns"/>
+		FROM crd_grade_items a
+		<include refid="gradeItemsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="fatherId != null and fatherId != ''">
+				AND a.father_id = #{fatherId}
+			</if>
+			<if test="itemName != null and itemName != ''">
+				AND a.item_name = #{itemName}
+			</if>
+			<if test="subType != null and subType != ''">
+				AND a.sub_type = #{subType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GradeItems">
+		SELECT 
+			<include refid="gradeItemsColumns"/>
+		FROM crd_grade_items a
+		<include refid="gradeItemsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO crd_grade_items(
+			id,
+			father_id,
+			sub_type,
+			child_id,
+			item_name,
+			item_code,
+			item_status,
+			sort,
+			remark,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{fatherId},
+			#{subType},
+			#{childId},
+			#{itemName},
+			#{itemCode},
+			#{itemStatus},
+			#{sort},
+			#{remark},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE crd_grade_items SET 	
+			father_id = #{fatherId},
+			child_id = #{childId},
+			item_name = #{itemName},
+			item_code = #{itemCode},
+			item_status = #{itemStatus},
+			sort = #{sort},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE crd_grade_items SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

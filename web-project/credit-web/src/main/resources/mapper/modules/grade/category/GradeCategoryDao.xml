@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.grade.dao.category.GradeCategoryDao">
+    
+	<sql id="gradeCategoryColumns">
+		a.id AS "id",
+		a.sub_type AS "subType",
+		a.parent_id AS "parent.id",
+		a.parent_ids AS "parentIds",
+		a.cate_name AS "cateName",
+		p.cate_name As "parent.name",
+		a.status AS "status",
+		a.sort AS "sort",
+		a.proportion AS "proportion",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.remark AS "remark",
+		b.name as "createByName"
+	</sql>
+	
+	<sql id="gradeCategoryJoins">
+	left join crd_grade_category p on p.id = a.parent_id
+	left JOIN sys_user b ON b.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="GradeCategory">
+		SELECT 
+			<include refid="gradeCategoryColumns"/>
+		FROM crd_grade_category a
+		<include refid="gradeCategoryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GradeCategory">
+		SELECT 
+			<include refid="gradeCategoryColumns"/>
+		FROM crd_grade_category a
+		<include refid="gradeCategoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="subType != null and subType != ''">
+				AND a.sub_type LIKE 
+					<if test="dbName == 'oracle'">'%'||#{subType}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{subType}+'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%',#{subType},'%')</if>
+			</if>
+			 <if test="parent != null and parent.id != null and parent.id != ''">
+				AND a.parent_id = #{parent.id} and a.parent_id=#{id}
+			</if> 
+			 <if test="fatherFlag != null  and fatherFlag != ''">
+				AND a.parent_id = #{fatherFlag} 
+			</if> 
+			<if test="cateName != null and cateName != null and cateName != ''">
+				AND a.cate_name like CONCAT(#{cateName},'%') 
+			</if>
+			<if test="parentIds != null and parentIds != ''">
+				AND a.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%'||#{parentIds}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{parentIds}+'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%',#{parentIds},'%')</if>
+			</if>
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<select id="findAllList" resultType="GradeCategory">
+		SELECT 
+			<include refid="gradeCategoryColumns"/>
+		FROM crd_grade_category a
+		<include refid="gradeCategoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<select id="findByParentIdsLike" resultType="GradeCategory">
+		SELECT
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids
+		FROM crd_grade_category a
+		<include refid="gradeCategoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.parent_ids LIKE #{parentIds}
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO crd_grade_category(
+			id,
+			sub_type,
+			parent_id,
+			parent_ids,
+			cate_name,
+			status,
+			sort,
+			proportion,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			remark
+		) VALUES (
+			crd_nextval('cateSeq'),
+			#{subType},
+			#{parent.id},
+			#{parentIds},
+			#{cateName},
+			#{status},
+			#{sort},
+			#{proportion},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{remark}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE crd_grade_category SET 	
+			sub_type = #{subType},
+			parent_id = #{parent.id},
+			cate_name = #{cateName},
+			sort = #{sort},
+			proportion = #{proportion},
+			update_by = #{updateBy.id},
+			remark = #{remark}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE crd_grade_category SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE crd_grade_category SET 
+			del_flag = #{DEL_FLAG_DELETE}
+<!-- 		WHERE id = #{id} OR parent_ids LIKE '%,'||#{id}||',%' -->
+		WHERE id = #{id} OR parent_ids LIKE '%,'#{id}',%'
+	</update>
+	
+</mapper>

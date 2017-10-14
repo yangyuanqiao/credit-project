@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.creditact.dao.appraise.RecordsAppraiseDao">
+    
+	<sql id="recordsAppraiseColumns">
+		a.id AS "id",
+		a.sub_id AS "subId",
+		a.sub_type AS "subType",
+		a.sub_name AS "subName",
+		a.act_type AS "actType",
+		a.gain_title AS "gainTitle",
+		a.gain_content AS "gainContent",
+		a.gain_result AS "gainResult",
+		a.gain_date AS "gainDate",
+		a.department AS "department",
+		a.statue AS "statue",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="recordsAppraiseJoins">
+	</sql>
+    
+	<select id="get" resultType="RecordsAppraise">
+		SELECT 
+			<include refid="recordsAppraiseColumns"/>
+		FROM crd_records_appraise a
+		<include refid="recordsAppraiseJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="RecordsAppraise">
+		SELECT 
+			<include refid="recordsAppraiseColumns"/>
+		FROM crd_records_appraise a
+		<include refid="recordsAppraiseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="subName != null and subName != ''">
+				AND a.sub_name = #{subName}
+			</if>
+			<if test="subId != null and subId != ''">
+				AND a.sub_id = #{subId}
+			</if>
+			<if test="actType != null and actType != ''">
+				AND a.act_type = #{actType}
+			</if>
+			<if test="department != null and department != ''">
+				AND a.department = #{department}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="RecordsAppraise">
+		SELECT 
+			<include refid="recordsAppraiseColumns"/>
+		FROM crd_records_appraise a
+		<include refid="recordsAppraiseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO crd_records_appraise(
+			id,
+			sub_id,
+			sub_type,
+			sub_name,
+			act_type,
+			gain_title,
+			gain_content,
+			gain_result,
+			gain_date,
+			department,
+			statue,
+			remark,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			crd_nextval('recordSeq'),
+			#{subId},
+			#{subType},
+			#{subName},
+			#{actType},
+			#{gainTitle},
+			#{gainContent},
+			#{gainResult},
+			#{gainDate},
+			#{department},
+			#{statue},
+			#{remark},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE crd_records_appraise SET 	
+			sub_id = #{subId},
+			sub_type = #{subType},
+			sub_name = #{subName},
+			act_type = #{actType},
+			gain_title = #{gainTitle},
+			gain_content = #{gainContent},
+			gain_result = #{gainResult},
+			gain_date = #{gainDate},
+			department = #{department},
+			statue = #{statue},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE crd_records_appraise SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

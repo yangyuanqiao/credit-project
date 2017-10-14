@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.amass.credit.modules.grade.dao.GradeLevelDao">
+    
+	<sql id="gradeLevelColumns">
+		a.id AS "id",
+		a.subject_type AS "subjectType",
+		a.level_name AS "levelName",
+		a.level_code AS "levelCode",
+		a.min_score AS "minScore",
+		a.max_score AS "maxScore",
+		a.remark AS "remark",
+		a.sort AS "sort",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		b.name AS "createBy.name"
+	</sql>
+	
+	<sql id="gradeLevelJoins">
+		JOIN sys_user b ON b.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="GradeLevel">
+		SELECT 
+			<include refid="gradeLevelColumns"/>
+		FROM crd_grade_level a
+		<include refid="gradeLevelJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GradeLevel">
+		SELECT 
+			<include refid="gradeLevelColumns"/>
+		FROM crd_grade_level a
+		<include refid="gradeLevelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="levelName != null and levelName != ''">
+				AND a.level_name = #{levelName}
+			</if>
+			<if test="subjectType != null and subjectType != ''">
+				AND a.subject_type = #{subjectType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC 
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GradeLevel">
+		SELECT 
+			<include refid="gradeLevelColumns"/>
+		FROM crd_grade_level a
+		<include refid="gradeLevelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="subjectType != null and subjectType != ''">
+				AND a.subject_type = #{subjectType}
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.max_score asc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO crd_grade_level(
+			id,
+			subject_type,
+			level_name,
+			level_code,
+			min_score,
+			max_score,
+			remark,
+			sort,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			crd_nextval('cateSeq'),
+			#{subjectType},
+			#{levelName},
+			#{levelCode},
+			#{minScore},
+			#{maxScore},
+			#{remark},
+			#{sort},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE crd_grade_level SET 	
+			subject_type = #{subjectType},
+			level_name = #{levelName},
+			level_code = #{levelCode},
+			min_score = #{minScore},
+			max_score = #{maxScore},
+			remark = #{remark},
+			sort = #{sort},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE crd_grade_level SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>
